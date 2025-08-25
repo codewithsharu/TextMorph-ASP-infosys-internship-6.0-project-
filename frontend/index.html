@@ -32,7 +32,7 @@
             <div class="form-cols">
                 <div class="col-1"></div>
                 <div class="col-2">
-                    <a href="#">Forgot password?</a>
+                    <a href="#" onclick="showForgotPassword()">Forgot password?</a>
                 </div>
             </div>
             <div class="input-box">
@@ -74,15 +74,43 @@
                 <span>Already have an account? <a href="#" onclick="loginFunction()">Login</a></span>
             </div>
         </form>
+
+        <!-- Add this section for Forgot Password -->
+        <div class="forgot-password" style="display:none;">
+            <h2>Forgot Password</h2>
+            <form action="#" id="forgotPasswordForm">
+                <div class="input-box">
+                    <input type="email" class="input-field" id="forgot-email" required>
+                    <label for="forgot-email" class="label">Email</label>
+                </div>
+                <div class="input-box">
+                    <button class="btn-submit" id="ForgotPasswordBtn" type="submit">Send Reset Link</button>
+                </div>
+            </form>
+            <div class="switch-form" style="text-align:center;margin-top:10px;">
+                <span>Remembered your password? <a href="#" onclick="hideForgotPassword()">Back to Login</a></span>
+            </div>
+        </div>
     </div>
 
     <script>
+        // Show/Hide Forgot Password Section
+        function showForgotPassword() {
+            document.querySelector('.login-form').style.display = 'none';
+            document.querySelector('.register-form').style.display = 'none';
+            document.querySelector('.forgot-password').style.display = 'block';
+        }
+        function hideForgotPassword() {
+            document.querySelector('.login-form').style.display = '';
+            document.querySelector('.register-form').style.display = '';
+            document.querySelector('.forgot-password').style.display = 'none';
+        }
+
         // Login logic
         document.getElementById('loginForm').addEventListener('submit', async function(event) {
             event.preventDefault();
 
-            // Use username for login, as backend expects username not email
-            // We'll use the email field as username for now
+         
             const username = document.getElementById('log-email').value;
             const password = document.getElementById('log-pass').value;
 
@@ -99,7 +127,7 @@
 
                 if (response.ok) {
                     alert(data.message);
-                    // Redirect to home.html in the same path
+                   
                     window.location.href = 'home.html';
                 } else {
                     alert(data.message || 'Login failed. Please try again.');
@@ -114,8 +142,7 @@
             event.preventDefault();
 
             const username = document.getElementById('reg-name').value;
-            // For now, only username and password are sent to backend, as per backend/app.py
-            // Email is collected but not sent, unless backend is updated to accept it
+            const email = document.getElementById('reg-email').value;
             const password = document.getElementById('reg-pass').value;
             const agree = document.getElementById('agree').checked;
 
@@ -130,15 +157,37 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ username, email, password })
                 });
 
                 const data = await response.json();
                 alert(data.message);
-                // Optionally, clear the form or switch to login
-                // document.getElementById('registerForm').reset();
+               
+                
             } catch (error) {
                 alert('Registration failed. Please try again.');
+            }
+        });
+
+        // Forgot Password logic
+        document.getElementById('forgotPasswordForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('forgot-email').value;
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/forgot_password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                alert('Error sending reset link. Please try again.');
             }
         });
     </script>

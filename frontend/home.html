@@ -1,6 +1,7 @@
 <!-- 
   Theme: Project TEXT SUMMARISATION USING AI
   UI: Minimal, black and white only
+  Extra: World-class image upload UI for extracting text
 -->
 <div style="position:sticky;top:0;background:#fff;z-index:10;">
   <div style="max-width:1200px;margin:0 auto;padding:0 24px;position:relative;">
@@ -10,10 +11,6 @@
           <img src="https://www.svgrepo.com/show/303650/neo-logo.svg" alt="Logo" style="height:32px;width:auto;display:block;filter: grayscale(1) brightness(0);">
         </a>
       </div>
-      <!-- <div style="display:flex;align-items:center;gap:24px;">
-        <a href="/login" style="color:#111;font-size:15px;font-weight:500;text-decoration:none;padding:8px 16px;transition:color 0.2s;border-radius:4px;" onmouseover="this.style.background='#111';this.style.color='#fff'" onmouseout="this.style.background='';this.style.color='#111'">Login</a>
-        <a href="/signup" style="color:#fff;background:#111;padding:8px 16px;border-radius:4px;font-size:15px;font-weight:500;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,0.08);transition:background 0.2s;" onmouseover="this.style.background='#222'" onmouseout="this.style.background='#111'">Sign up</a>
-      </div> -->
     </div>
   </div>
   <div style="max-width:1120px;margin:0 auto;position:relative;">
@@ -29,9 +26,35 @@
         </h1>
         <p style="margin-top:18px;font-size:20px;line-height:1.7;color:#181818;padding:0 36px;white-space:pre-line;font-family:serif;opacity:0.92;">
           Effortlessly distill articles, documents, or any passage into a crisp summary. 
-          Paste your text below and experience the clarity and speed of AI-powered summarisation.
+          Paste your text below, or upload an image to extract text, and experience the clarity and speed of AI-powered summarisation.
         </p>
-        <form style="margin-top:38px;display:flex;justify-content:center;gap:18px;width:100%;flex-direction:column;align-items:center;">
+        <form id="summarise-form" style="margin-top:38px;display:flex;justify-content:center;gap:18px;width:100%;flex-direction:column;align-items:center;" enctype="multipart/form-data">
+          <div id="image-upload-area"
+            style="width:420px;max-width:100%;background:#fafafa;border:2.5px dashed #111;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:140px;cursor:pointer;transition:border 0.2s, box-shadow 0.2s;position:relative;margin-bottom:18px;box-shadow:0 2px 12px rgba(0,0,0,0.04);"
+            tabindex="0"
+            onmouseover="this.style.borderColor='#000';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.10)'"
+            onmouseout="this.style.borderColor='#111';this.style.boxShadow='0 2px 12px rgba(0,0,0,0.04)'"
+          >
+            <input type="file" id="image-upload" accept="image/*" style="display:none;">
+            <div id="image-upload-content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;">
+              <svg width="48" height="48" fill="none" stroke="#111" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:10px;">
+                <rect x="3" y="3" width="18" height="18" rx="4" fill="#fff" stroke="#111" stroke-width="1.5"/>
+                <path d="M8 15l3-4 3 4" stroke="#111" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="9" cy="9" r="1.5" fill="#111"/>
+              </svg>
+              <span style="font-size:16px;color:#111;font-family:serif;font-weight:500;">Drag &amp; drop an image here, or <span style="text-decoration:underline;cursor:pointer;color:#111;" id="image-upload-browse">browse</span></span>
+              <span style="font-size:13px;color:#888;font-family:serif;margin-top:4px;">JPG, PNG, or GIF. Max 5MB.</span>
+            </div>
+            <div id="image-preview-container" style="display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;">
+              <img id="image-preview" src="" alt="Preview" style="max-width:120px;max-height:80px;border-radius:8px;margin-bottom:8px;border:1.5px solid #111;box-shadow:0 1px 6px rgba(0,0,0,0.08);background:#fff;">
+              <span id="image-filename" style="font-size:13px;color:#111;font-family:serif;word-break:break-all;"></span>
+              <button type="button" id="remove-image-btn" style="margin-top:8px;padding:4px 14px;font-size:13px;border:none;background:#111;color:#fff;border-radius:6px;cursor:pointer;">Remove</button>
+            </div>
+            <div id="image-upload-status" style="font-size:13px;color:#888;font-family:serif;margin-top:10px;display:none;"></div>
+            <div id="image-ocr-progress" style="width:80%;height:6px;background:#eee;border-radius:3px;overflow:hidden;margin-top:10px;display:none;">
+              <div id="image-ocr-bar" style="height:100%;width:0%;background:#111;transition:width 0.3s;"></div>
+            </div>
+          </div>
           <textarea
             placeholder="Paste or type your text here..."
             style="width:420px;min-height:110px;max-width:100%;padding:16px 20px;font-size:17px;border:2px solid #111;border-radius:8px;outline:none;background:#fff;color:#111;transition:border 0.2s, box-shadow 0.2s;box-shadow:0 2px 12px rgba(0,0,0,0.04);font-family:inherit;resize:vertical;"
@@ -45,11 +68,173 @@
             onmouseover="this.style.background='#222';this.style.boxShadow='0 6px 24px rgba(0,0,0,0.16)'"
             onmouseout="this.style.background='#111';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.12)'"
           >
-            <span style="font-size:20px;margin-right:10px;display:inline-block;transform:translateY(1px);">✨</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="gold" viewBox="0 0 24 24" style="margin-right:10px;display:inline-block;vertical-align:middle;">
+              <path d="M12 2.5l2.92 6.09 6.73.98-4.87 4.75 1.15 6.71L12 17.27l-6.03 3.18 1.15-6.71-4.87-4.75 6.73-.98L12 2.5z"/>
+            </svg>
             Summarise Now
           </button>
         </form>
+        <div id="summary-result" style="margin-top:36px;text-align:left;max-width:600px;margin-left:auto;margin-right:auto;display:none;">
+          <h2 style="font-size:1.3rem;font-weight:700;color:#111;font-family:serif;margin-bottom:10px;">Summary:</h2>
+          <div id="summary-output" style="font-size:18px;line-height:1.6;color:#181818;font-family:serif;background:#fafafa;border:1.5px solid #111;border-radius:8px;padding:18px 22px;"></div>
+        </div>
       </div>
     </div>
   </div>
 </div>
+<script>
+  // --- World-class image upload UI logic ---
+  const uploadArea = document.getElementById('image-upload-area');
+  const fileInput = document.getElementById('image-upload');
+  const browseLink = document.getElementById('image-upload-browse');
+  const uploadContent = document.getElementById('image-upload-content');
+  const previewContainer = document.getElementById('image-preview-container');
+  const previewImg = document.getElementById('image-preview');
+  const filenameSpan = document.getElementById('image-filename');
+  const removeBtn = document.getElementById('remove-image-btn');
+  const statusSpan = document.getElementById('image-upload-status');
+  const ocrProgress = document.getElementById('image-ocr-progress');
+  const ocrBar = document.getElementById('image-ocr-bar');
+  let currentFile = null;
+
+  // Open file dialog on click or keyboard
+  uploadArea.addEventListener('click', () => fileInput.click());
+  uploadArea.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') fileInput.click();
+  });
+  browseLink.addEventListener('click', e => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+
+  // Drag & drop
+  uploadArea.addEventListener('dragover', e => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#000';
+    uploadArea.style.background = '#f0f0f0';
+  });
+  uploadArea.addEventListener('dragleave', e => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#111';
+    uploadArea.style.background = '#fafafa';
+  });
+  uploadArea.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#111';
+    uploadArea.style.background = '#fafafa';
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleImageFile(e.dataTransfer.files[0]);
+    }
+  });
+
+  // File input
+  fileInput.addEventListener('change', e => {
+    if (fileInput.files && fileInput.files[0]) {
+      handleImageFile(fileInput.files[0]);
+    }
+  });
+
+  // Remove image
+  removeBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    resetImageUpload();
+  });
+
+  function handleImageFile(file) {
+    if (!file.type.startsWith('image/')) {
+      showStatus('Please upload a valid image file.', true);
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showStatus('Image too large (max 5MB).', true);
+      return;
+    }
+    currentFile = file;
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      previewImg.src = e.target.result;
+      filenameSpan.textContent = file.name;
+      uploadContent.style.display = 'none';
+      previewContainer.style.display = 'flex';
+      statusSpan.style.display = 'inline';
+      statusSpan.textContent = 'Extracting text from image...';
+      ocrProgress.style.display = 'block';
+      ocrBar.style.width = '0%';
+      runOCR(file);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function resetImageUpload() {
+    currentFile = null;
+    fileInput.value = '';
+    previewImg.src = '';
+    filenameSpan.textContent = '';
+    previewContainer.style.display = 'none';
+    uploadContent.style.display = 'flex';
+    statusSpan.style.display = 'none';
+    ocrProgress.style.display = 'none';
+    ocrBar.style.width = '0%';
+  }
+
+  function showStatus(msg, isError) {
+    statusSpan.style.display = 'inline';
+    statusSpan.textContent = msg;
+    statusSpan.style.color = isError ? '#c00' : '#888';
+    if (isError) setTimeout(() => { statusSpan.style.display = 'none'; }, 2500);
+  }
+
+  // OCR with Tesseract.js
+  function runOCR(file) {
+    if (!window.Tesseract) {
+      showStatus('OCR not available. Please enable Tesseract.js.', true);
+      ocrProgress.style.display = 'none';
+      return;
+    }
+    window.Tesseract.recognize(file, 'eng', {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          ocrBar.style.width = Math.round((m.progress || 0) * 100) + '%';
+        }
+      }
+    }).then(({ data: { text } }) => {
+      document.getElementById('summary-input').value = text.trim();
+      showStatus('Text extracted and added to the box.', false);
+      ocrBar.style.width = '100%';
+      setTimeout(() => {
+        statusSpan.style.display = 'none';
+        ocrProgress.style.display = 'none';
+      }, 1200);
+    }).catch(() => {
+      showStatus('Failed to extract text.', true);
+      ocrProgress.style.display = 'none';
+    });
+  }
+
+  // Summarisation form submission (demo, replace with your backend call)
+  document.getElementById('summarise-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const input = document.getElementById('summary-input').value.trim();
+    if (!input) {
+      alert('Please enter or extract some text to summarise.');
+      return;
+    }
+    try {
+      // Replace the URL with your actual summarisation endpoint
+      const response = await fetch('http://127.0.0.1:5000/summarise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: input })
+      });
+      const data = await response.json();
+      document.getElementById('summary-result').style.display = 'block';
+      document.getElementById('summary-output').textContent = data.summary || 'No summary returned.';
+    } catch (e) {
+      document.getElementById('summary-result').style.display = 'block';
+      document.getElementById('summary-output').textContent = 'Failed to summarise. Please try again.';
+    }
+  });
+</script>
+<!-- Tesseract.js for client-side OCR (optional, can be removed if using backend OCR) -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>

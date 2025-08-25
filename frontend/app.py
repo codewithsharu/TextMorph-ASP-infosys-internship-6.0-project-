@@ -1,16 +1,31 @@
 import streamlit as st
+import requests
 
-# Title of the app
-st.title("Welcome to My Streamlit App")
+st.title("Register User")
 
+# Registration form
+with st.form("register_form"):
+    username = st.text_input("Username")
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    submit = st.form_submit_button("Register")
 
-# Display the message from the backend
-st.write(data["message"])
-
-# Add a button
-if st.button("Click Me"):
-    st.write("Button clicked!")
-
-# Add a slider
-slider_value = st.slider("Select a value", 0, 100)
-st.write(f"You selected: {slider_value}")
+if submit:
+    if not username or not email or not password:
+        st.error("Please fill in all fields.")
+    else:
+        # Send username, email, and password in payload
+        payload = {
+            "username": username,
+            "email": email,
+            "password": password
+        }
+        try:
+            response = requests.post("http://127.0.0.1:5000/register", json=payload)
+            data = response.json()
+            if response.ok:
+                st.success(data.get("message", "Registration successful!"))
+            else:
+                st.error(data.get("message", "Registration failed."))
+        except Exception as e:
+            st.error(f"Error: {e}")

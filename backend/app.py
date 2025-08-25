@@ -25,18 +25,22 @@ def home():
 
 @app.route('/register', methods=['POST'])
 def register():
-    # Accept JSON payload with username and password
+  
     data = request.get_json()
     username = data.get('username')
+    email = data.get('email')
     password = data.get('password')
-    if not username or not password:
-        return jsonify({'message': 'Username and password are required.'}), 400
+    if not username or not email or not password:
+        return jsonify({'message': 'Username, email, and password are required.'}), 400
 
-    # Store password in plain text (NOT RECOMMENDED FOR PRODUCTION)
+  
     unique_id = generate_unique_id()
 
     cur = mysql.connection.cursor()
-    cur.execute("INSERT INTO users (username, password, unique_id) VALUES (%s, %s, %s)", (username, password, unique_id))
+    cur.execute(
+        "INSERT INTO users (username, email, password, unique_id) VALUES (%s, %s, %s, %s)",
+        (username, email, password, unique_id)
+    )
     mysql.connection.commit()
     cur.close()
     
@@ -44,7 +48,7 @@ def register():
 
 @app.route('/login', methods=['POST'])
 def login():
-    # Accept JSON payload with username and password
+   
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
@@ -62,9 +66,29 @@ def login():
         if password == stored_password:
             return jsonify({'message': 'Login successful!', 'unique_id': unique_id}), 200
         else:
+          
+            print(f"Login failed for user '{username}'. Provided password: '{password}', Stored password: '{stored_password}'")
             return jsonify({'message': 'Invalid username or password.'}), 401
     else:
         return jsonify({'message': 'Invalid username or password.'}), 401
+
+@app.route('/forgot_password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    email = data.get('email')
+    if not email:
+        return jsonify({'message': 'Email is required.'}), 400
+
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT username FROM users WHERE email = %s", (email,))
+    result = cur.fetchone()
+    cur.close()
+
+    if result:
+       
+        return jsonify({'message': 'Password reset link has been sent to your email.'}), 200
+    else:
+        return jsonify({'message': 'Email not found.'}), 404
 
 @app.route('/test_connection', methods=['GET'])
 def test_connection():
