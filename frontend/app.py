@@ -1,12 +1,8 @@
 import streamlit as st
-import requests
 
 # Title of the app
 st.title("Welcome to My Streamlit App")
 
-# Fetch data from the backend
-response = requests.get("http://127.0.0.1:8000/api/data")
-data = response.json()
 
 # Display the message from the backend
 st.write(data["message"])
